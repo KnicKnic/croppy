@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en-us">
+<!-- manifest="cache.mf" -->
+
+<head>
+  <meta name="Description" content="A webassembly version of imagemagick that can crop comics into webtoon or tapas format.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffad04">
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="favicon.png">
+
+
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- iphone section -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="apple-touch-icon" href="iphone/touch-icon-iphone.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="iphone/touch-icon-ipad.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="iphone/touch-icon-iphone-retina.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="iphone/touch-icon-ipad-retina.png">
+
+
+  <link rel="apple-touch-startup-image" href="iphone/apple_splash_640.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="iphone/apple_splash_750.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="iphone/apple_splash_1242.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="iphone/apple_splash_1125.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="iphone/apple_splash_1536.png" media="(min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="iphone/apple_splash_1668.png" media="(min-device-width: 834px) and (max-device-width: 834px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="iphone/apple_splash_2048.png" media="(min-device-width: 1024px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)">
+
+
+  <title>Croppy</title>
+
+  <style>
+    .all-items {
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: row;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+
+    html,
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      /*    
+   min-height:100%;
+   position:relative; */
+    }
+
+    #body {
+      padding-bottom: 30px;
+      /* Height of the footer */
+    }
+
+    #footer {
+      justify-content: flex-end;
+      /*   
+   position:absolute;
+   bottom:0;
+   width:100%;
+   height:30px;    */
+    }
+
+    .image-holder {
+      flex-direction: column;
+      page-break-before: always;
+      width: 700px;
+
+    }
+
+    .split-image {
+      float: left;
+      /* border-left: 1px solid transparent; */
+      /* border-right: 1px solid transparent; */
+    }
+
+    .split-image:hover {
+      float: left;
+      /* border: 1px dashed black; */
+      outline: 3px dashed blue;
+      outline-offset: -3px;
+    }
+  </style>
+  <script DEFER src="https://cdn.jsdelivr.net/g/filesaver.js"></script>
+  <script DEFER src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+</head>
+
+<body>
+  <div>
+    <h3>
+      <a href="instructions.html">Instructions / Troubleshooting</a>
+    </h3>
+  </div>
+
+  <div id="body">
+    <div id="container">
+      <div class="all-items">
+        <div id="picture">
+          <img src="images/croppy.png" alt="Croppy Logo" title="Logo pic by Laht - https://tapas.io/Laht">
+        </div>
+        <div>
+          <!-- If I am sick / don't work you can go to the old croppy at <a href="https://old-croppy.beta1042.duckdns.org">old-croppy</a>, but in general I should be faster, and work on larger images!<br> -->
+          I take
+          <b>PNG, PSD, TIFF</b> (best options) or JPG.
+          <br> You can upload multiple files at once.
+          <P>
+            <table>
+              <tr>
+                <th>Websites</th>
+                <th>format ( select all that apply)</th>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DoLine">Line Webtoon</label>
+                </td>
+                <td>
+                  <input type="checkbox" name="DoLine" id="DoLine" value="1" checked="checked">
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DoTapas">Tapas</label>
+                </td>
+                <td>
+                  <input type="checkbox" name="" id="DoTapas" value="1" />
+                </td>
+              </tr>
+            </table>
+            <p>
+              <input type=file name=file id="your-files" aria-label="File Input" accept=".jpg,.jpeg,.png,.bmp,.tif,.tiff,.psd" multiple>
+        </div>
+      </div>
+
+
+      <div id="Processing" hidden="true">
+        <H2>Splitting pictures, ignore unresponsive webpage and wait up to 60 seconds per file, then give up.</H2>
+      </div>
+
+      <div style="clear: both"></div>
+      <div id="imageHolder" class="image-holder"></div>
+
+    </div>
+  </div>
+
+  <script type='module'>
+    //import the library to talk to imagemagick
+    import * as Magick from './magickApi.js';
+    
+    let processing = document.getElementById("Processing");
+    let imageHolder = document.getElementById('imageHolder');
+    let doLine = document.getElementById("DoLine");
+    let doTapas = document.getElementById("DoTapas");
+
+    // if ('serviceWorker' in navigator) {
+    //   window.addEventListener('load', function () {
+    //     navigator.serviceWorker.register('/sw.js').then(function (registration) {
+    //       let refreshing;
+    //       navigator.serviceWorker.addEventListener('controllerchange',
+    //         function () {
+    //           if (refreshing) return;
+    //           refreshing = true;
+    //           window.location.reload();
+    //         }
+    //       );
+
+    //       if (registration.active) {
+    //         registration.active.addEventListener('message', function (msg) {
+    //           alert(msg);
+    //           location.reload();
+    //         });
+    //       }
+    //     }, function (err) {
+    //       // registration failed :(
+    //       console.log('ServiceWorker registration failed: ', err);
+    //     });
+    //   });
+    // }
+
+    function GenerateZip() {
+      let zip = new JSZip();
+
+      if (imageHolder.hasChildNodes()) {
+        let children = imageHolder.childNodes;
+        for (let i = 0; i < children.length; i++) {
+          let child = children[i].wasmResponse;
+
+          zip.file(child['name'], child['blob'])
+        }
+        zip.generateAsync({ type: "blob" })
+          .then(function (content) {
+            // see FileSaver.js
+            saveAs(content, "split.zip");
+          });
+      }
+    };
+
+    // helper to read user inputed files
+    function ReadFile(file){
+      let readFile = Magick.CreatePromiseEvent();
+
+      // read fileName & content
+      let fr = new FileReader();
+      fr.onload = function (txt) {
+        let fileName = file.name
+
+        let encoded_txt = txt.target.result;
+        let content = new Uint8Array(encoded_txt);
+        let sourceFilename = fileName
+        
+        readFile['resolve']([sourceFilename, content]);
+      }
+      fr.readAsArrayBuffer(file);
+
+      return readFile;
+    };
+    let SetProcessing = function (isProcessing){
+        //filesRemaining.hidden = !isProcessing;
+        processing.hidden = !isProcessing;
+    }
+
+    var magickWorker = new Worker('magick.js');
+
+    // handle new images to process
+    var control = document.getElementById("your-files");
+    var processFiles = async function () {
+      // When the control has changed, there are new files
+
+      let files = control.files,
+        len = files.length;
+      //if images
+      if (len > 0) {
+        //clean up old images and show processing screen
+        SetProcessing(true);
+        imageHolder.innerHTML = '';
+
+        // for each file requested split them (files isn't an array)
+        let processedImagesLine=[];
+        let processedImagesTapas=[];
+        for (let fileIndex = 0; fileIndex < files.length; ++fileIndex) {
+          let [fileName,content] = await ReadFile(files[fileIndex]);
+          let fileNameNoExt = fileName.substring(0, fileName.lastIndexOf('.'));
+          try{
+            if (doLine.checked) {
+              let destFilename = fileNameNoExt + '-%d.jpg'
+              let splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
+                ["convert", fileName, "-flatten", "-resize", "800", "-crop", "800x1280", "-quality", "100", "-scene", "0", destFilename]);
+                processedImagesLine.push(...splitFiles);
+            }
+            if (doTapas.checked) {
+              let destFilename = fileNameNoExt + '-%d.png'
+              let splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
+              ["convert", fileName, "-flatten", "-resize", ">940", "-crop", "x700", "-quality", "100", "-scene", "0", destFilename]);
+                processedImagesTapas.push(...splitFiles);
+            }
+          }
+          catch(e){alert("Error your browser could not format a file");}
+        }
+        let processedImages = processedImagesLine;
+        processedImages.push(...processedImagesTapas);
+
+        for (let file of processedImages) {
+          let out_txt1 = file['blob'];
+          let img = document.createElement('img');
+          img.src = URL.createObjectURL(out_txt1);
+          img.className = "split-image"
+          img.name = file['name']
+          img.wasmResponse = file
+          imageHolder.appendChild(img);
+        }
+        GenerateZip();
+        SetProcessing(false);
+      }      
+    };
+    control.addEventListener("change", function (event) {
+      event.preventDefault();
+      processFiles();
+    }, false);
+  </script>
+  <div id="footer">
+    <span style="text-align:left;"> &nbsp;&nbsp;*Croppy does not transmit your images off your computer.</span>
+    <span style="float:right;">
+      <a href="https://github.com/KnicKnic/croppy">source/copyright</a>
+    </span>
+  </div>
+</body>
+
+</html>
