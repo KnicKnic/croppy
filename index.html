@@ -168,30 +168,30 @@
     let doLine = document.getElementById("DoLine");
     let doTapas = document.getElementById("DoTapas");
 
-    // if ('serviceWorker' in navigator) {
-    //   window.addEventListener('load', function () {
-    //     navigator.serviceWorker.register('/sw.js').then(function (registration) {
-    //       let refreshing;
-    //       navigator.serviceWorker.addEventListener('controllerchange',
-    //         function () {
-    //           if (refreshing) return;
-    //           refreshing = true;
-    //           window.location.reload();
-    //         }
-    //       );
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').then(function (registration) {
+          let refreshing;
+          navigator.serviceWorker.addEventListener('controllerchange',
+            function () {
+              if (refreshing) return;
+              refreshing = true;
+              window.location.reload();
+            }
+          );
 
-    //       if (registration.active) {
-    //         registration.active.addEventListener('message', function (msg) {
-    //           alert(msg);
-    //           location.reload();
-    //         });
-    //       }
-    //     }, function (err) {
-    //       // registration failed :(
-    //       console.log('ServiceWorker registration failed: ', err);
-    //     });
-    //   });
-    // }
+          if (registration.active) {
+            registration.active.addEventListener('message', function (msg) {
+              alert(msg);
+              location.reload();
+            });
+          }
+        }, function (err) {
+          // registration failed :(
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
 
     function GenerateZip() {
       let zip = new JSZip();
@@ -293,11 +293,19 @@
       processFiles();
     }, false);
   </script>
-  <div id="footer">
+  <div id="footer">    
     <span style="text-align:left;"> &nbsp;&nbsp;*Croppy does not transmit your images off your computer.</span>
+    
     <span style="float:right;">
       <a href="https://github.com/KnicKnic/croppy">source/copyright</a>
     </span>
+    <br>
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+      <input type="hidden" name="cmd" value="_s-xclick">
+      <input type="hidden" name="hosted_button_id" value="N6PPJQPQ9H78G">
+      <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+      </form>
+    <br>
   </div>
 </body>
 
