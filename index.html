@@ -184,7 +184,10 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('sw.js').then(function (registration) {
+        navigator.serviceWorker.register('sw.js', {
+          updateViaCache: 'none',
+          // https://developers.google.com/web/updates/2018/06/fresher-sw
+        }).then(function (registration) {
           let refreshing;
           navigator.serviceWorker.addEventListener('controllerchange',
             function () {
