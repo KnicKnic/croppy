@@ -207,6 +207,22 @@
       });
     }
 
+    function GenerateZipItemName(name){
+      if(!doLine.checked || !doTapas.checked)
+      {
+        return name;
+      }
+      if(name.endsWith('.jpg'))
+      {
+        return 'webtoon/'+name;
+      }
+      else if(name.endsWith('.png'))
+      {
+        return 'tapas/'+name;
+      }
+      return name;
+    }
+
     function GenerateZip() {
       let zip = new JSZip();
 
@@ -215,7 +231,7 @@
         for (let i = 0; i < children.length; i++) {
           let child = children[i].wasmResponse;
 
-          zip.file(child['name'], child['blob'])
+          zip.file(GenerateZipItemName(child['name']), child['blob'])
         }
         zip.generateAsync({ type: "blob" })
           .then(function (content) {
