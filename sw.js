@@ -1,7 +1,7 @@
 // version 1
 // v0
 var prefix_name = "croppy_"
-var CACHE_NAME = prefix_name + 'cache_1_7';
+var CACHE_NAME = prefix_name + 'cache_1_8';
 var cacheWhitelist = [CACHE_NAME];
 var urlsToCache = [
     './',
