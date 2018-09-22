@@ -283,6 +283,25 @@
         processing.hidden = !isProcessing;
     }
 
+    function DoSomeTrack(category, action, name){
+      try{
+        _paq.push(['trackEvent', category, action, name]);        
+      }catch(e){}
+      try{
+        console.log('about to send GA');
+        gtag('event', action, {
+          'event_category': category,
+          'event_label': name,
+        });   
+        console.log('sent to GA');
+      }catch(e){console.log(e)}
+    }
+    function CompletedImage(category, action, name){
+      DoSomeTrack(category, action, name);
+      try{
+        _paq.push(['trackGoal', 1]);
+      }catch(e){}
+    }
     var magickWorker = new Worker('magick.js');
 
     // handle new images to process
@@ -301,6 +320,23 @@
         // for each file requested split them (files isn't an array)
         let processedImagesLine=[];
         let processedImagesTapas=[];
+        let failedProcessing = false;
+
+        let firstFileName = files[0].name;
+        let extension_first_file = firstFileName.substring(1+firstFileName.lastIndexOf('.'))
+        let conversion_destination = ''
+        if (doLine.checked) {
+          conversion_destination = 'Line'
+        }
+        if (doTapas.checked) {
+          conversion_destination = 'Tapas'
+        }
+        if (doTapas.checked && doTapas.checked) {
+          conversion_destination = 'Line_Tapas'
+        }
+        DoSomeTrack("convert_start", extension_first_file, conversion_destination);
+        
+        
         for (let fileIndex = 0; fileIndex < files.length; ++fileIndex) {
           let [fileName,content] = await ReadFile(files[fileIndex]);
           let fileNameNoExt = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -318,7 +354,17 @@
                 processedImagesTapas.push(...splitFiles);
             }
           }
-          catch(e){alert("Error your browser could not format a file");}
+          catch(e)
+          {
+            if(!failedProcessing)
+            {
+              failedProcessing = true;
+              DoSomeTrack("convert_failed", extension_first_file, conversion_destination);
+              alert("Error your browser could not format a file");
+            }
+
+          }
+
         }
         let processedImages = processedImagesLine;
         processedImages.push(...processedImagesTapas);
@@ -333,7 +379,9 @@
           imageHolder.appendChild(img);
         }
         GenerateZip();
+        CompletedImage("convert_complete", extension_first_file, conversion_destination);
         SetProcessing(false);
+
       }      
     };
     control.addEventListener("change", function (event) {
