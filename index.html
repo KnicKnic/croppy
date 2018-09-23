@@ -303,7 +303,11 @@
       }catch(e){}
     }
     var magickWorker = new Worker('magick.js');
-
+    function AlertIt(confirmText, destination) {
+      var answer = confirm (confirmText)
+      if (answer)
+      window.location=destination;
+    }
     // handle new images to process
     var control = document.getElementById("your-files");
     var processFiles = async function () {
@@ -360,7 +364,8 @@
             {
               failedProcessing = true;
               DoSomeTrack("convert_failed", extension_first_file, conversion_destination);
-              alert("Error your browser could not format a file");
+              
+              AlertIt("Error croppy could not format your file, old croppy may be up to the task, hit ok to go to https://old.croppy.duckdns.org", "https://old.croppy.duckdns.org");
             }
 
           }
