@@ -5,3 +5,6 @@ It is all client side and is a progressive web app.
 
 ## Attributions
 This product uses a web assembly version of ImageMagick and its depenencies. See [https://github.com/KnicKnic/WASM-ImageMagick](https://github.com/KnicKnic/WASM-ImageMagick)
+
+## Related
+See https://github.com/KnicKnic/croppy-webtoon for a javascript bookmarklet that allows you to convert the images automatically when uploading for webtoons.
