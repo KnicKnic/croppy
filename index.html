@@ -176,7 +176,7 @@
               <input type=file name=file id="your-files" aria-label="File Input" accept=".jpg,.jpeg,.png,.bmp,.tif,.tiff,.psd" multiple>
               </p>
               <br>
-          <h3>NEW Webtoons extension/bookmark</h3>
+          <h3>NEW Webtoons & Tapas extension/bookmark</h3>
           <p>Works on Desktop & Mobile even iPad! no need to download .zip!</p>
           <p><a href="webtoon_bookmarklet.html">Extension instructions</a> be sure to checkout the videos.</p>
         </div>
@@ -361,7 +361,7 @@
             if (doTapas.checked) {
               let destFilename = fileNameNoExt + '-%d.png'
               let splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
-              ["convert", fileName, "-flatten", "-resize", ">940", "-crop", "x700", "-quality", "100", "-scene", "0", destFilename]);
+              ["convert", fileName, "-flatten", "-resize", ">940", "-crop", "x1280", "-quality", "100", "-scene", "0", destFilename]);
                 processedImagesTapas.push(...splitFiles);
             }
           }
