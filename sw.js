@@ -1,17 +1,18 @@
 // version 1
 // v0
 var prefix_name = "croppy_"
-var CACHE_NAME = prefix_name + 'cache_1_26';
+var CACHE_NAME = prefix_name + 'cache_1_30';
 var cacheWhitelist = [CACHE_NAME];
 var urlsToCache = [
     './',
     './index.html',
     './images/croppy.png',
+    './images/Croppy_xmas_1.jpg',
     './images/croppy_split.jpg',
     './manifest.json',
-    './magick.js',
-    './magick.wasm',
-    './magickApi.js',
+    'https://knicknic.github.io/wasm-imagemagick/magick.js',
+    'https://knicknic.github.io/wasm-imagemagick/magick.wasm',
+    'https://knicknic.github.io/wasm-imagemagick/magickApi.js',
     './instructions.html',
     './favicon.png',
     './add_webtoon_croppy.js',
