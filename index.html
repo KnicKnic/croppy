@@ -142,7 +142,7 @@
     <div id="container">
       <div class="all-items">
         <div id="picture">
-          <img src="images/croppy.png" alt="Croppy Logo" title="Logo pic by Laht - https://tapas.io/Laht">
+          <img src="images/Croppy_anniver.small.png" alt="Croppy Logo" title="Logo pic by Laht - https://laht.carrd.co">
         </div>
         <div>
           <!-- If I am sick / don't work you can go to the old croppy at <a href="https://old-croppy.beta1042.duckdns.org">old-croppy</a>, but in general I should be faster, and work on larger images!<br> -->
@@ -176,8 +176,10 @@
               <input type=file name=file id="your-files" aria-label="File Input" accept=".jpg,.jpeg,.png,.bmp,.tif,.tiff,.psd" multiple>
               </p>
               <br>
-          <h3>NEW Webtoons & Tapas extension/bookmark</h3>
-          <p>Works on Desktop & Mobile even iPad! no need to download .zip!</p>
+          <!-- <h3>NEW Webtoons & Tapas extension/bookmark</h3>
+          <p>Works on Desktop & Mobile even iPad! no need to download .zip!</p> -->
+          <h3>Webtoons & Tapas extension/bookmark</h3>
+          <p>Works on Desktop, no need to download .zip!</p>
           <p><a href="webtoon_bookmarklet.html">Extension instructions</a> be sure to checkout the videos.</p>
         </div>
         <div>
@@ -355,7 +357,7 @@
             if (doLine.checked) {
               let destFilename = fileNameNoExt + '-%d.jpg'
               let splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
-                ["convert", fileName, "-flatten", "-resize", "800", "-crop", "800x1280", "-quality", "100", "-scene", "0", destFilename]);
+                ["convert", fileName, "-flatten", "-resize", "800", "-crop", "800x1000", "-quality", "100", "-scene", "0", destFilename]);
                 processedImagesLine.push(...splitFiles);
             }
             if (doTapas.checked) {
