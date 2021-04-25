@@ -142,7 +142,17 @@
     <div id="container">
       <div class="all-items">
         <div id="picture">
-          <img src="images/Croppy_anniver.small.png" alt="Croppy Logo" title="Logo pic by Laht - https://laht.carrd.co">
+          <img id='croppy_logo' src="images/Croppy_ver3.small.png" alt="Croppy Logo" title="Logo pic by Laht - https://laht.carrd.co">
+          <script defer>
+            // if december or the earliest thanksgiving (Nov 22nd)
+            // use xmas croppy
+            const now = new Date()
+            if( now.getMonth() == 11 || (now.getMonth() == 10 && now.getDate() >= 22)){
+              document.getElementById('croppy_logo').src = 'images/Croppy_xmas_1.jpg'
+            }else{
+              // document.getElementById('croppy_logo').src = 'images/Croppy_ver3.small.png'
+            }
+          </script>
         </div>
         <div>
           <!-- If I am sick / don't work you can go to the old croppy at <a href="https://old-croppy.beta1042.duckdns.org">old-croppy</a>, but in general I should be faster, and work on larger images!<br> -->
@@ -176,11 +186,22 @@
               <input type=file name=file id="your-files" aria-label="File Input" accept=".jpg,.jpeg,.png,.bmp,.tif,.tiff,.psd" multiple>
               </p>
               <br>
-          <!-- <h3>NEW Webtoons & Tapas extension/bookmark</h3>
-          <p>Works on Desktop & Mobile even iPad! no need to download .zip!</p> -->
-          <h3>Webtoons & Tapas extension/bookmark</h3>
-          <p>Works on Desktop, no need to download .zip!</p>
-          <p><a href="webtoon_bookmarklet.html">Extension instructions</a> be sure to checkout the videos.</p>
+              <p>Checkout my friend's comic "<a href="https://www.webtoons.com/en/challenge/please-dont-eat-me/1-the-roommate/viewer?title_no=555912&episode_no=2">Please Don't Eat Me</a>", who is trying to unlock ad revenue.</p>
+
+              <a href="https://www.webtoons.com/en/challenge/please-dont-eat-me/1-the-roommate/viewer?title_no=555912&episode_no=2"> <img id='promo_logo'  height="30%" src="promo-bottom.png" alt="Title cover image for comic Please Don't Eat Me" title="Please Don't Eat Me"></a>
+                    <p>Check this box if you want to add a shout out for this comic at the end of your webtoon update <input type="checkbox" name="AddPromo" id="AddPromo" value="1"/>
+                    </p>
+                    <!-- <table cellpadding="0" cellspacing="0" border="0" style="padding: 0.5vw; vertical-align: text-top; border: none; max-width:100%; max-height:10%; background: transparent;">
+                <tr style="padding: 0.5vw; border: none; max-width:100%; max-height:10%; background: transparent;">
+                  <td style="padding: 0.5vw; border: none; max-width:100%; max-height:10%; background: transparent; vertical-align: text-top;">
+                    
+                  </td>
+                  <td style="padding: 0.5vw; border: none; max-width:100%; max-height:10%; background: transparent;"> 
+                    <img id='promo_logo' src="promo-side.png" alt="Title cover image for comic Please Don't Eat Me" title="Please Don't Eat Me">
+
+                  </td>
+                </tr>
+              </table> -->
         </div>
         <div>
         </div>
@@ -205,6 +226,7 @@
     let imageHolder = document.getElementById('imageHolder');
     let doLine = document.getElementById("DoLine");
     let doTapas = document.getElementById("DoTapas");
+    let addPromo = document.getElementById("AddPromo");
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
@@ -234,38 +256,55 @@
       });
     }
 
-    function GenerateZipItemName(name){
+    function GenerateZipItemName(name, prefix){
       if(!doLine.checked || !doTapas.checked)
       {
         return name;
       }
-      if(name.endsWith('.jpg'))
-      {
-        return 'webtoon/'+name;
-      }
-      else if(name.endsWith('.png'))
-      {
-        return 'tapas/'+name;
-      }
-      return name;
+      return prefix + '/'+name;
     }
 
-    function GenerateZip() {
+    async function GetPromoImage(){
+      var xhr = new XMLHttpRequest();
+      let data = await new Promise(function(resolve, reject) {
+      xhr.onreadystatechange = function() {
+          if (xhr.readyState == 4) {
+            if (xhr.status >= 300) {
+              reject("Error, status code = " + xhr.status)
+            } else {
+              resolve(xhr.response);
+            }
+          }
+        }
+        xhr.open('get', './promo-img.png', true)
+        xhr.responseType = "blob";
+        xhr.send();
+      });
+      DoSomeTrack("added_promo", "lizz", "lizz");
+      let arrayBuff = await data.arrayBuffer()
+      return {
+        name: 'zzzzzadd-promo-9999.png',
+        buffer: new Uint8Array(arrayBuff),
+        blob: data,
+      }
+  }
+
+
+    function GenerateZip(line, tapas) {
       let zip = new JSZip();
-
-      if (imageHolder.hasChildNodes()) {
-        let children = imageHolder.childNodes;
-        for (let i = 0; i < children.length; i++) {
-          let child = children[i].wasmResponse;
-
-          zip.file(GenerateZipItemName(child['name']), child['blob'])
+      if((line.length + tapas.length ) >0){
+        for(let item of line){
+          zip.file(GenerateZipItemName(item.name, 'webtoon'), item.blob);
+        }
+        for(let item of tapas){
+          zip.file(GenerateZipItemName(item.name, 'tapas'), item.blob)
         }
         zip.generateAsync({ type: "blob" })
           .then(function (content) {
             // see FileSaver.js
             saveAs(content, "split.zip");
           });
-      }
+        }
     };
 
     // helper to read user inputed files
@@ -305,6 +344,15 @@
         console.log('sent to GA');
       }catch(e){console.log(e)}
     }
+    function IsTooLarge(files){
+      let total = 0
+      for (let fileIndex = 0; fileIndex < files.length; ++fileIndex){
+        total = total + files[fileIndex].blob.size
+      }
+      // is total greater than 19.5MB
+      return total > 20459520 
+    }
+
     function CompletedImage(category, action, name){
       DoSomeTrack(category, action, name);
       try{
@@ -317,6 +365,11 @@
       if (answer)
       window.location=destination;
     }
+    function IsJpeg(extension){
+      extension = extension.toLowerCase()
+      return extension == "jpeg" || extension == "jpg"
+    }
+
     // handle new images to process
     var control = document.getElementById("your-files");
     var processFiles = async function () {
@@ -349,37 +402,84 @@
         }
         DoSomeTrack("convert_start", extension_first_file, conversion_destination);
         
-        
-        for (let fileIndex = 0; fileIndex < files.length; ++fileIndex) {
-          let [fileName,content] = await ReadFile(files[fileIndex]);
-          let fileNameNoExt = fileName.substring(0, fileName.lastIndexOf('.'));
-          try{
-            if (doLine.checked) {
-              let destFilename = fileNameNoExt + '-%d.jpg'
-              let splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
-                ["convert", fileName, "-flatten", "-resize", "800", "-crop", "800x1000", "-quality", "100", "-scene", "0", destFilename]);
+        for(let webtoonRetryLogic = 0; webtoonRetryLogic < 3; ++webtoonRetryLogic){
+          let oldLineSplitCount = processedImagesLine.length
+          processedImagesLine=[];
+          processedImagesTapas=[];
+          for (let fileIndex = 0; fileIndex < files.length; ++fileIndex) {
+            try{
+              if (doLine.checked) {
+                let [fileName,content] = await ReadFile(files[fileIndex]);
+                let fileNameNoExt = fileName.substring(0, fileName.lastIndexOf('.'));
+                let splitFiles = []
+                if(webtoonRetryLogic == 0 && IsJpeg(extension_first_file)){
+                  webtoonRetryLogic =1; //skip attempting to do png
+                }
+                
+                let destFilename = fileNameNoExt + '-%d.png'
+                // first do PNG
+                switch (webtoonRetryLogic){
+                  case 0:
+                    // should skip this if input file is .jpg or .jpeg (ignore case)
+                    destFilename = fileNameNoExt + '-%d.png'
+                    splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
+                      ["convert", fileName, "-flatten", "-resize", "800", "-crop", "800x1000", "-quality", "100", "-scene", "0", destFilename]);
+                    break;
+                  
+                  // PNG is too large, try JPG
+                  case 1:
+                    destFilename = fileNameNoExt + '-%d.jpg'
+                    splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
+                      ["convert", fileName, "-flatten", "-resize", "800", "-crop", "800x1000", "-quality", "100", "-scene", "0", destFilename]);
+                    break;
+
+                  // jpeg too large, max file size each file
+                  case 2:
+                    destFilename = fileNameNoExt + '-%d.jpg'
+                    let maxSize = Math.floor(20459520 / oldLineSplitCount)
+                    let maxSizeStr = "jpeg:extent=" + maxSize
+                    splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
+                      ["convert", fileName, "-flatten", "-resize", "800", "-crop", "800x1000", "-define", maxSizeStr, "-scene", "0", destFilename]);
+                  break;
+                }
                 processedImagesLine.push(...splitFiles);
+              }
+              if (doTapas.checked) {
+                let [fileName,content] = await ReadFile(files[fileIndex]);
+                let fileNameNoExt = fileName.substring(0, fileName.lastIndexOf('.'));
+                let destFilename = fileNameNoExt + '-%d.png'
+                if(IsJpeg(extension_first_file)){
+                  destFilename = fileNameNoExt + '-%d.jpg'
+                }
+                let splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
+                  ["convert", fileName, "-flatten", "-resize", ">940", "-crop", "x1280", "-quality", "100", "-scene", "0", destFilename]);
+                  processedImagesTapas.push(...splitFiles);
+              }
             }
-            if (doTapas.checked) {
-              let destFilename = fileNameNoExt + '-%d.png'
-              let splitFiles = await Magick.Call([{'name': fileName, 'content':content}],
-              ["convert", fileName, "-flatten", "-resize", ">940", "-crop", "x1280", "-quality", "100", "-scene", "0", destFilename]);
-                processedImagesTapas.push(...splitFiles);
-            }
-          }
-          catch(e)
-          {
-            if(!failedProcessing)
+            catch(e)
             {
-              failedProcessing = true;
-              DoSomeTrack("convert_failed", extension_first_file, conversion_destination);
-              
-              AlertIt("Error croppy could not format your file, old croppy may be up to the task, hit ok to go to https://old.croppy.duckdns.org", "https://old.croppy.duckdns.org");
+              if(!failedProcessing)
+              {
+                failedProcessing = true;
+                DoSomeTrack("convert_failed", extension_first_file, conversion_destination);
+                
+                AlertIt("Error croppy could not format your file, old croppy may be up to the task, hit ok to go to https://old.croppy.duckdns.org", "https://old.croppy.duckdns.org");
+              }
+
             }
-
           }
-
+          if(!IsTooLarge(processedImagesLine) || failedProcessing){
+            break;
+          }
         }
+        
+        if(addPromo.checked){
+          processedImagesLine.push(await GetPromoImage());
+        }
+
+        GenerateZip(processedImagesLine, processedImagesTapas);
+
+
         let processedImages = processedImagesLine;
         processedImages.push(...processedImagesTapas);
 
@@ -392,7 +492,6 @@
           img.wasmResponse = file
           imageHolder.appendChild(img);
         }
-        GenerateZip();
         CompletedImage("convert_complete", extension_first_file, conversion_destination);
         SetProcessing(false);
 
@@ -403,7 +502,9 @@
       processFiles();
     }, false);
   </script>
-  <div id="footer">    
+  <div id="footer">
+    <span style="text-align:left;"> &nbsp;&nbsp;Contact me, Twitter <a href="https://twitter.com/knic_knic">@knic_knic</a></span>
+    <br>
     <span style="text-align:left;"> &nbsp;&nbsp;*Croppy does not transmit your images off your computer.</span>
     
     <span style="float:right;">
